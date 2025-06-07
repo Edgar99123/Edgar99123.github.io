@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LogicGate</title>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
+  <script type="module" src="./game.js"></script>
+  <style>
+    @font-face {
+      font-family: 'PressStart2P';
+      src: url('https://fonts.gstatic.com/s/pressstart2p/v11/e3t4euO8T-267oIAQAu6jDQyKp5c.ttf') format('truetype');
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      height: 100%;
+      width: 100%;
+      background: black;
+      font-family: 'PressStart2P', monospace;
+    }
+
+    #game {
+      width: 100vw;
+      height: 100vh;
+    }
+
+    canvas {
+      display: block;
+    }
+
+    .menu {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background-color: #222;
+      border: 4px solid #ff0044;
+      color: #fff;
+      padding: 10px;
+      width: 200px;
+      z-index: 10;
+      box-shadow: 0 0 10px #ff0044;
+      display: none;
+    }
+
+    .menu h1 {
+      font-size: 12px;
+      margin: 0 0 10px;
+      text-align: center;
+      color: #00ffcc;
+    }
+
+    .flechas {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .flechas img {
+      width: 60px;
+      margin-bottom: 5px;
+      image-rendering: pixelated;
+    }
+
+    .flechas p, .tabulador p {
+      font-size: 8px;
+      margin: 0;
+      color: #fff;
+    }
+
+    .tabulador {
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    .tabulador h2 {
+      font-size: 10px;
+      margin: 0 0 5px;
+      color: #ffcc00;
+    }
+
+    .name-game {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 11;
+      text-align: center;
+      pointer-events: none;
+    }
+
+    .name-game h1 {
+      margin: 0;
+      font-size: 18px;
+      color: #00ffcc;
+      text-shadow: 2px 2px 0 #ff0044, -2px -2px 0 #000;
+      letter-spacing: 2px;
+      font-family: 'PressStart2P', monospace;
+    }
+
+    .credits {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 11;
+      text-align: center;
+      pointer-events: none;
+    }
+
+    .credits p {
+      margin: 0;
+      font-size: 8px;
+      color: #00ffcc;
+      text-shadow: 1px 1px 0 #ff0044, -1px -1px 0 #000;
+      font-family: 'PressStart2P', monospace;
+      letter-spacing: 1px;
+    }
+
+    .start-menu {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url('assets/scenery/overworld/fondo.jpg');
+      background-size: cover;
+      background-position: center top;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      background-color: rgba(0, 0, 0, 0.4);
+      background-blend-mode: overlay;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      color: #fff;
+      font-family: 'PressStart2P', monospace;
+      text-align: center;
+    }
+
+    .start-menu h1 {
+      font-size: 32px;
+      color: #ff0044;
+      text-shadow: 3px 3px 0 #00ffcc, -3px -3px 0 #000;
+      margin-bottom: 40px;
+    }
+
+    .start-menu p {
+      font-size: 18px;
+      color: #00ffcc;
+      text-shadow: 2px 2px 0 #000;
+      margin: 15px 0;
+      cursor: pointer;
+    }
+
+    .start-menu p:hover {
+      color: #ffcc00;
+      text-shadow: 2px 2px 0 #ff0044;
+    }
+
+    .pause-menu {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      color: #fff;
+      font-family: 'PressStart2P', monospace;
+      text-align: center;
+    }
+
+    .pause-menu h1 {
+      font-size: 32px;
+      color: #ff0044;
+      text-shadow: 3px 3px 0 #00ffcc, -3px -3px 0 #000;
+      margin-bottom: 20px;
+    }
+
+    .pause-menu p {
+      font-size: 16px;
+      color: #00ffcc;
+      text-shadow: 2px 2px 0 #000;
+      margin: 10px 0;
+      cursor: pointer;
+    }
+
+    .pause-menu p:hover {
+      color: #ffcc00;
+      text-shadow: 2px 2px 0 #ff0044;
+    }
+
+    .score-menu {
+      background: linear-gradient(180deg, #2a1a4e 0%, #ff0044 100%);
+      border: 4px solid #00ffcc;
+      border-radius: 10px;
+      color: #fff;
+      padding: 20px;
+      width: 280px;
+      z-index: 1001;
+      box-shadow: 0 0 15px #00ffcc, inset 0 0 10px #ffcc00;
+      display: none;
+      margin-top: 40px;
+    }
+
+    .score-menu h1 {
+      font-size: 18px;
+      margin: 0 0 20px;
+      text-align: center;
+      color: #ffdd00;
+      text-shadow: 3px 3px 0 #000, -2px -2px 0 #ff0044;
+      letter-spacing: 2px;
+    }
+
+    .score-menu p {
+      font-size: 16px;
+      color: #00ffcc;
+      margin: 12px 0;
+      text-align: center;
+      text-shadow: 3px 3px 0 #ff0044, -2px -2px 0 #000;
+      letter-spacing: 2px;
+      font-weight: bold;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 5px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div id="game"></div>
+  <div class="name-game">
+    <h1>LogicGate</h1>
+  </div>
+  <div class="credits">
+    <p>Angel Antonio & Edgar Arellano</p>
+  </div>
+  <div class="start-menu" id="startMenu">
+    <h1>LogicGate</h1>
+    <p id="startGame">Start Game</p>
+    <p id="controls">Controls</p>
+    <p id="score">Score</p>
+    <div class="score-menu" id="scoreMenu">
+      <h1>PUNTAJE</h1>
+      <p id="scoreValue">Puntaje: 0</p>
+      <p id="livesValue">Vidas: 5</p>
+    </div>
+  </div>
+  <div class="pause-menu" id="pauseMenu">
+    <h1>Pausa</h1>
+    <p id="resumeGame">Reanudar</p>
+    <p id="toggleControls">Ocultar Controles</p>
+  </div>
+  <div class="menu" id="controlsMenu">
+    <h1>CONTROLES</h1>
+    <div class="flechas">
+      <img src="assets/teclado.webp" alt="Flechas del teclado">
+      <p>Moverse</p>
+      <div class="tabulador">
+        <h2>Tab</h2>
+        <p>Conversar</p>
+      </div>
+      <div class="tabulador">
+        <h2>P</h2>
+        <p>Pausar</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let gameScore = 0;
+    let gameLives = 5;
+    let controlsVisible = true;
+
+    document.getElementById('startGame').addEventListener('click', () => {
+      document.getElementById('startMenu').style.display = 'none';
+      document.getElementById('scoreMenu').style.display = 'none';
+      document.getElementById('controlsMenu').style.display = 'block';
+      controlsVisible = true;
+      window.dispatchEvent(new CustomEvent('startGame', { detail: { score: gameScore, lives: gameLives } }));
+    });
+
+    document.getElementById('controls').addEventListener('click', () => {
+      const controlsMenu = document.getElementById('controlsMenu');
+      const scoreMenu = document.getElementById('scoreMenu');
+      controlsMenu.style.display = controlsMenu.style.display === 'block' ? 'none' : 'block';
+      scoreMenu.style.display = 'none';
+    });
+
+    document.getElementById('score').addEventListener('click', () => {
+      const scoreMenu = document.getElementById('scoreMenu');
+      const controlsMenu = document.getElementById('controlsMenu');
+      scoreMenu.style.display = scoreMenu.style.display === 'block' ? 'none' : 'block';
+      controlsMenu.style.display = 'none';
+      document.getElementById('scoreValue').textContent = `Puntaje: ${gameScore}`;
+      document.getElementById('livesValue').textContent = `Vidas: ${gameLives}`;
+    });
+
+    document.getElementById('resumeGame').addEventListener('click', () => {
+      document.getElementById('pauseMenu').style.display = 'none';
+      document.getElementById('controlsMenu').style.display = controlsVisible ? 'block' : 'none';
+      window.dispatchEvent(new CustomEvent('resumeGame'));
+    });
+
+    document.getElementById('toggleControls').addEventListener('click', () => {
+      const controlsMenu = document.getElementById('controlsMenu');
+      controlsVisible = !controlsVisible;
+      controlsMenu.style.display = controlsVisible ? 'block' : 'none';
+      document.getElementById('toggleControls').textContent = controlsVisible ? 'Ocultar Controles' : 'Mostrar Controles';
+    });
+  </script>
+</body>
+</html>

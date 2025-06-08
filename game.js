@@ -44,7 +44,7 @@ window.addEventListener('resize', () => {
 function preload () {
   this.load.image('cloud1', 'assets/scenery/overworld/cloud1.png')
   this.load.image('cloud2', 'assets/scenery/overworld/cloud2.png')
-  this.load.image('montañas', 'assets/scenery/overworld/montañas.png')
+  this.load.image('montanas', 'assets/scenery/overworld/Montanas.png')
   this.load.image('bush1', 'assets/scenery/overworld/bush1.png')
   this.load.image('bush2', 'assets/scenery/overworld/bush2.png')
   this.load.image('floorbricks', 'assets/scenery/overworld/floorbricks.png')
@@ -54,7 +54,7 @@ function preload () {
   this.load.image('puertaA1', 'assets/scenery/puertaA1.png')
   this.load.image('puertaA2', 'assets/scenery/puertaA2.png')
   this.load.image('coin', 'assets/coin.png')
-  this.load.image('montañasBW', 'assets/scenery/overworld/montañasBW.png')
+  this.load.image('montanasBW', 'assets/scenery/overworld/MontanasBW.png')
   this.load.image('bush1BW', 'assets/scenery/overworld/bush1BW.png')
   this.load.image('bush2BW', 'assets/scenery/overworld/bush2BW.png')
   this.load.image('floorbricksBW', 'assets/scenery/overworld/floorbricksBW.png')
@@ -72,6 +72,9 @@ function preload () {
     frameHeight: 911
   })
   this.load.audio('gameover', 'assets/sound/music/gameover.mp3')
+  this.load.audio('principal', 'assets/sound/music/principal.mp3')
+  this.load.audio('infierno', 'assets/sound/music/infierno.mp3')
+  this.load.audio('fase2', 'assets/sound/music/fase2.mp3')
   this.load.audio('coinSound', 'assets/sound/effects/coin.mp3')
 }
 
@@ -94,7 +97,7 @@ function create () {
 
   this.mountains = []
   for (let x = 0; x < 4000; x += 400) {
-    const mountain = this.add.image(x, config.height - 64, 'montañas')
+    const mountain = this.add.image(x, config.height - 64, 'montanas')
       .setOrigin(0, 1)
       .setScale(0.6)
       .setDepth(-1.5)
@@ -149,7 +152,7 @@ function create () {
 
   this.npc.body.setSize(this.npc.width * 0.2, this.npc.height * 0.2).setOffset(0, this.npc.height * 0.8)
 
-  this.npc2 = this.physics.add.sprite(3700, config.height - 61, 'npc2')
+  this.npc2 = this.physics.add.sprite(3500, config.height - 61, 'npc2')
     .setOrigin(0, 1)
     .setScale(0.2)
     .setGravityY(0)
@@ -390,7 +393,7 @@ function create () {
     document.getElementById('scoreValue').textContent = `Puntaje: ${gameScore}`
     document.getElementById('livesValue').textContent = `Vidas: ${gameLives}`
     this.npc2WebhookUrl = 'https://dev-academy.n8n.itelisoft.org/webhook/demonioTEdgarA'
-    this.mountains.forEach(mountain => mountain.setTexture('montañas'))
+    this.mountains.forEach(mountain => mountain.setTexture('montanas'))
     this.bushes.forEach(bush => {
       const newTexture = bush.texture.key === 'bush1' ? 'bush1' : 'bush2'
       bush.setTexture(newTexture)
@@ -411,6 +414,7 @@ function create () {
     this.restartButton.setVisible(false)
     this.isPaused = false
     this.scene.restart()
+    window.location.reload()
   })
 
   this.time.addEvent({
@@ -478,10 +482,12 @@ function create () {
                   player: this.currentInput,
                   npc: data
                 })
-                if (data === 'AAAAAAAAAAAAAAAAAAAAA') {
+                if (data === 'CORRE!') {
                   npc2Flying = true
                   this.npc2WalkTween.pause()
                   this.npc2.setGravityY(0)
+                  this.sound.stopByKey('infierno') // Detener la música de infierno
+                  this.sound.play('fase2', { volume: 0.3, loop: true })
                   this.npc2FlyTween = this.tweens.add({
                     targets: this.npc2,
                     y: this.npc2.y - 100,
@@ -498,29 +504,46 @@ function create () {
                     }
                   })
                   this.npc2WebhookUrl = 'https://dev-academy.n8n.itelisoft.org/webhook/vuelaEdgarA'
-                } else if (data === 'JAJAJAJAJ QUE DIVERTIDO, ME HICISTE EL DIA, TEN, UNA LLAVE') {
+                }
+                if (data.includes('JAJAJAJAJ QUE DIVERTIDO, ME HICISTE EL DIA, TEN, UNA LLAVE')) {
                   hasKey2 = true
                   console.log('Llave para puerta 2 obtenida')
                 }
+                targetDialog.setText(data).setVisible(true)
+                targetDialogBg.setVisible(true)
               } else {
                 conversationHistory.push({
                   player: this.currentInput,
                   npc: data
                 })
+                if (data === 'LLAVE090302') {
+                  hasKey = true
+                  console.log('Llave obtenida: LLAVE090302')
+                  targetDialog.setText('Felicidades viajero, es respuesta es correcta, te haz ganado la llave, no vemos').setVisible(true)
+                  targetDialogBg.setVisible(true)
+                  this.npcWalkTween.pause()
+                  this.npc.anims.play('npc-idle', true)
+                  this.npc.flipX = true
+                  this.tweens.add({
+                    targets: this.npc,
+                    x: this.npc.x - 1000,
+                    duration: 5000,
+                    ease: 'Linear',
+                    onComplete: () => {
+                      this.npc.setVisible(false)
+                    }
+                  })
+                } else {
+                  targetDialog.setText(data).setVisible(true)
+                  targetDialogBg.setVisible(true)
+                }
               }
 
-              targetDialog.setText(data).setVisible(true)
-              targetDialogBg.setVisible(true)
               this.tweens.add({
                 targets: [targetDialog, targetDialogBg],
                 alpha: { from: 0, to: 1 },
                 duration: 640
               })
-
-              if (data.includes('LLAVE090302')) {
-                hasKey = true
-                console.log('Llave obtenida: LLAVE090302')
-              }
             })
             .catch(() => {
               targetDialog.setText('Error al conectar con la IA..').setVisible(true)
@@ -597,6 +620,7 @@ function collectCoin(mario, coin) {
   this.scoreText.setText(`Puntaje: ${gameScore}`)
   document.getElementById('scoreValue').textContent = `Puntaje: ${gameScore}`
   this.sound.play('coinSound', { volume: 0.5 })
+  this.sound.play('principal', { volume: 0.3 })
 }
 
 function update () {
@@ -644,7 +668,7 @@ function update () {
         conversationHistory = []
         conversationHistoryNPC2 = []
         this.door.isOpen = false
-        this.setTexture('puerta2')
+        this.door.setTexture('puerta2')
         this.door.body.enable = true
         this.door.body.setSize(524 * 0.2, 801 * 0.2)
         this.door.body.setOffset(0, -801 * 0.2)
@@ -666,7 +690,7 @@ function update () {
         document.getElementById('scoreValue').textContent = `Puntaje: ${gameScore}`
         document.getElementById('livesValue').textContent = `Vidas: ${gameLives}`
         this.npc2WebhookUrl = 'https://dev-academy.n8n.itelisoft.org/webhook/demonioTEdgarA'
-        this.mountains.forEach(mountain => mountain.setTexture('montañas'))
+        this.mountains.forEach(mountain => mountain.setTexture('montanas'))
         this.bushes.forEach(bush => {
           const newTexture = bush.texture.key === 'bush1' ? 'bush1' : 'bush2'
           bush.setTexture(newTexture)
@@ -693,28 +717,30 @@ function update () {
 
   updateDialogPositions(this)
 
-  const distanceToNPC = Phaser.Math.Distance.Between(this.mario.x, this.mario.y, this.npc.x, this.npc.y)
+  const distanceToNPC = Phaser.Math.Distance.Between(this.mario.x, this.mario.y, this.npc.x, this.mario.y)
   const distanceToNPC2 = Phaser.Math.Distance.Between(this.mario.x, this.mario.y, this.npc2.x, this.npc2.y)
   const distanceToDoor = Phaser.Math.Distance.Between(this.mario.x, this.mario.y, this.door.x, this.door.y)
   const distanceToDoor2 = Phaser.Math.Distance.Between(this.mario.x, this.mario.y, this.door2.x, this.door2.y)
 
-  if (this.door.isOpen && !doorCrossed && this.mario.x > doorRightEdge) {
-    doorCrossed = true
-    this.door.setVisible(false)
-    this.door.body.enable = false
-    this.npc.setVisible(false)
-    this.npcWalkTween.pause()
-    this.mountains.forEach(mountain => mountain.setTexture('montañasBW'))
-    this.bushes.forEach(bush => {
-      const newTexture = bush.texture.key === 'bush1' ? 'bush1BW' : 'bush2BW'
-      bush.setTexture(newTexture)
-    })
-    this.trees.forEach(tree => tree.setTexture('arbolBW'))
-    this.floor.getChildren().forEach(brick => brick.setTexture('floorbricksBW'))
-    this.sunsetGraphics.clear()
-    this.sunsetGraphics.fillGradientStyle(0x333333, 0x333333, 0xcccccc, 0xffffff, 1)
-    this.sunsetGraphics.fillRect(0, 0, 4000, config.height)
-  }
+if (this.door.isOpen && !doorCrossed && this.mario.x > doorRightEdge) {
+  doorCrossed = true
+  this.door.setVisible(false)
+  this.door.body.enable = false
+  this.npc.setVisible(false)
+  this.npcWalkTween.pause()
+  this.sound.stopByKey('principal') // Detener la música principal
+  this.sound.play('infierno', { volume: 0.3, loop: true })
+  this.mountains.forEach(mountain => mountain.setTexture('montanasBW'))
+  this.bushes.forEach(bush => {
+    const newTexture = bush.texture.key === 'bush1' ? 'bush1BW' : 'bush2BW'
+    bush.setTexture(newTexture)
+  })
+  this.trees.forEach(tree => tree.setTexture('arbolBW'))
+  this.floor.getChildren().forEach(brick => brick.setTexture('floorbricksBW'))
+  this.sunsetGraphics.clear()
+  this.sunsetGraphics.fillGradientStyle(0x333333, 0x333333, 0xcccccc, 0xffffff, 1)
+  this.sunsetGraphics.fillRect(0, 0, 4000, config.height)
+}
 
   console.log('Distancia a la puerta 1:', distanceToDoor, 'Puerta 1 abierta:', this.door.isOpen, 'Tiene llave:', hasKey, 'Puerta 1 atravesada:', doorCrossed)
   console.log('Distancia a la puerta 2:', distanceToDoor2, 'Puerta 2 abierta:', this.door2.isOpen, 'Tiene llave 2:', hasKey2)

@@ -460,7 +460,7 @@ function create () {
           this.isTyping = false
 
           const history = isNPC2 ? conversationHistoryNPC2 : conversationHistory
-          const webhookUrl = isNPC2 ? this.npc2WebhookUrl : 'https://dev-academy.n8n.itelisoft.org/webhook/edgarjuegoA'
+          const webhookUrl = isNPC2 ? this.npc2WebhookUrl : 'http://localhost:5678/webhook/npc1'
           const role = isNPC2 ? 'Demonio' : 'Vikingo'
 
           const messageToSend = history
